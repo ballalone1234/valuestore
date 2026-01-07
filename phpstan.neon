@@ -1,0 +1,33 @@
+parameters:
+    level: max
+    paths:
+        - src
+        - tests
+    
+    # Ignore errors that are expected
+    ignoreErrors:
+        # Allow mixed types in some cases
+        - '#Method .* has parameter .* with no value type specified in iterable type array#'
+    
+    # PHP version
+    phpVersion: 80200
+    
+    # Check for missing type hints
+    checkMissingIterableValueType: true
+    checkGenericClassInNonGenericObjectType: true
+    
+    # Strict rules
+    checkAlwaysTrueCheckTypeFunctionCall: true
+    checkAlwaysTrueInstanceof: true
+    checkAlwaysTrueStrictComparison: true
+    checkExplicitMixedMissingReturn: true
+    checkFunctionNameCase: true
+    checkInternalClassCaseSensitivity: true
+    
+    # Report unused
+    reportUnmatchedIgnoredErrors: true
+    
+    # Baseline (if needed)
+    # includes:
+    #     - phpstan-baseline.neon
+

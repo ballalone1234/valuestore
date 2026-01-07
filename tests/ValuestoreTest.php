@@ -3,17 +3,16 @@
 namespace Spatie\Valuestore\Test;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use Spatie\Valuestore\Valuestore;
 
 class ValuestoreTest extends TestCase
 {
-    /** @var string */
-    protected $storageFile;
+    protected string $storageFile;
 
-    /** @var \Spatie\Valuestore\Valuestore */
-    protected $valuestore;
+    protected Valuestore $valuestore;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -26,24 +25,24 @@ class ValuestoreTest extends TestCase
         $this->valuestore = Valuestore::make($this->storageFile);
     }
 
-    /** @test */
-    public function it_can_store_an_array_while_making_the_valuestore()
+    #[Test]
+    public function it_can_store_an_array_while_making_the_valuestore(): void
     {
         $valuestore = Valuestore::make($this->storageFile, ['key' => 'value']);
 
         $this->assertSame('value', $valuestore->get('key'));
     }
 
-    /** @test */
-    public function it_can_store_a_key_value_pair()
+    #[Test]
+    public function it_can_store_a_key_value_pair(): void
     {
         $this->valuestore->put('key', 'value');
 
         $this->assertSame('value', $this->valuestore->get('key'));
     }
 
-    /** @test */
-    public function it_can_store_an_array()
+    #[Test]
+    public function it_can_store_an_array(): void
     {
         $testArray = ['one' => 1, 'two' => 2];
 
@@ -52,8 +51,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame($testArray, $this->valuestore->get('key'));
     }
 
-    /** @test */
-    public function it_can_skip_writing_to_disk_if_putting_empty_array()
+    #[Test]
+    public function it_can_skip_writing_to_disk_if_putting_empty_array(): void
     {
         $this->valuestore->put('key', 'value');
         touch($this->storageFile, 101);
@@ -63,16 +62,16 @@ class ValuestoreTest extends TestCase
         $this->assertEquals(filemtime($this->storageFile), 101);
     }
 
-    /** @test */
-    public function it_can_push_a_value_to_a_non_existing_key()
+    #[Test]
+    public function it_can_push_a_value_to_a_non_existing_key(): void
     {
         $this->valuestore->push('key', 'value');
 
         $this->assertSame(['value'], $this->valuestore->get('key'));
     }
 
-    /** @test */
-    public function it_can_push_a_value_to_an_existing_key()
+    #[Test]
+    public function it_can_push_a_value_to_an_existing_key(): void
     {
         $this->valuestore->put('key', 'value');
 
@@ -81,16 +80,16 @@ class ValuestoreTest extends TestCase
         $this->assertSame(['value', 'value2'], $this->valuestore->get('key'));
     }
 
-    /** @test */
-    public function it_can_prepend_a_value_to_a_non_existing_key()
+    #[Test]
+    public function it_can_prepend_a_value_to_a_non_existing_key(): void
     {
         $this->valuestore->prepend('key', 'value');
 
         $this->assertSame(['value'], $this->valuestore->get('key'));
     }
 
-    /** @test */
-    public function it_can_prepend_a_value_to_an_existing_key()
+    #[Test]
+    public function it_can_prepend_a_value_to_an_existing_key(): void
     {
         $this->valuestore->put('key', 'value');
 
@@ -99,8 +98,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame(['value2', 'value'], $this->valuestore->get('key'));
     }
 
-    /** @test */
-    public function it_can_determine_if_the_store_holds_a_value_for_a_given_name()
+    #[Test]
+    public function it_can_determine_if_the_store_holds_a_value_for_a_given_name(): void
     {
         $this->assertFalse($this->valuestore->has('key'));
 
@@ -109,22 +108,22 @@ class ValuestoreTest extends TestCase
         $this->assertTrue($this->valuestore->has('key'));
     }
 
-    /** @test */
-    public function it_will_return_the_default_value_when_using_a_non_existing_key()
+    #[Test]
+    public function it_will_return_the_default_value_when_using_a_non_existing_key(): void
     {
         $this->assertSame('default', $this->valuestore->get('key', 'default'));
     }
 
-    /** @test */
-    public function it_can_store_an_integer()
+    #[Test]
+    public function it_can_store_an_integer(): void
     {
         $this->valuestore->put('number', 1);
 
         $this->assertSame(1, $this->valuestore->get('number'));
     }
 
-    /** @test */
-    public function it_provides_a_chainable_put_method()
+    #[Test]
+    public function it_provides_a_chainable_put_method(): void
     {
         $this->valuestore
             ->put('number', 1)
@@ -134,14 +133,14 @@ class ValuestoreTest extends TestCase
         $this->assertSame('hello', $this->valuestore->get('string'));
     }
 
-    /** @test */
-    public function it_will_return_null_for_a_non_existing_value()
+    #[Test]
+    public function it_will_return_null_for_a_non_existing_value(): void
     {
         $this->assertNull($this->valuestore->get('non existing key'));
     }
 
-    /** @test */
-    public function it_can_overwrite_a_value()
+    #[Test]
+    public function it_can_overwrite_a_value(): void
     {
         $this->valuestore->put('key', 'value');
 
@@ -150,8 +149,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame('otherValue', $this->valuestore->get('key'));
     }
 
-    /** @test */
-    public function it_can_fetch_all_values_at_once()
+    #[Test]
+    public function it_can_fetch_all_values_at_once(): void
     {
         $this->valuestore->put('key', 'value');
 
@@ -163,8 +162,8 @@ class ValuestoreTest extends TestCase
         ], $this->valuestore->all());
     }
 
-    /** @test */
-    public function it_can_store_multiple_value_pairs_in_one_go()
+    #[Test]
+    public function it_can_store_multiple_value_pairs_in_one_go(): void
     {
         $values = [
             'key' => 'value',
@@ -178,8 +177,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame($values, $this->valuestore->all());
     }
 
-    /** @test */
-    public function it_can_store_values_without_forgetting_the_old_values()
+    #[Test]
+    public function it_can_store_values_without_forgetting_the_old_values(): void
     {
         $this->valuestore->put('test1', 'value1');
 
@@ -199,8 +198,8 @@ class ValuestoreTest extends TestCase
         ], $this->valuestore->all());
     }
 
-    /** @test */
-    public function it_can_fetch_all_values_starting_with_a_certain_value()
+    #[Test]
+    public function it_can_fetch_all_values_starting_with_a_certain_value(): void
     {
         $this->valuestore->put([
             'group1Key1' => 'valueGroup1Key1',
@@ -218,8 +217,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame($expectedArray, $this->valuestore->allStartingWith('group1'));
     }
 
-    /** @test */
-    public function it_can_fetch_all_values_starting_with_a_default_value()
+    #[Test]
+    public function it_can_fetch_all_values_starting_with_a_default_value(): void
     {
         $this->valuestore->put([
             'group1Key1' => 'valueGroup1Key1',
@@ -240,8 +239,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame($expectedArray, $this->valuestore->allStartingWith());
     }
 
-    /** @test */
-    public function it_can_forget_a_value()
+    #[Test]
+    public function it_can_forget_a_value(): void
     {
         $this->valuestore->put('key', 'value');
 
@@ -258,8 +257,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame('otherValue2', $this->valuestore->get('otherKey2'));
     }
 
-    /** @test */
-    public function it_can_flush_the_entire_value_store()
+    #[Test]
+    public function it_can_flush_the_entire_value_store(): void
     {
         $this->valuestore->put('key', 'value');
 
@@ -272,8 +271,8 @@ class ValuestoreTest extends TestCase
         $this->assertNull($this->valuestore->get('otherKey'));
     }
 
-    /** @test */
-    public function it_can_flush_all_keys_starting_with_a_certain_string()
+    #[Test]
+    public function it_can_flush_all_keys_starting_with_a_certain_string(): void
     {
         $this->valuestore->put([
             'group1' => 'valueGroup1',
@@ -293,14 +292,14 @@ class ValuestoreTest extends TestCase
         $this->assertSame($expectedArray, $this->valuestore->all());
     }
 
-    /** @test */
-    public function it_will_return_an_empty_array_when_getting_all_content()
+    #[Test]
+    public function it_will_return_an_empty_array_when_getting_all_content(): void
     {
         $this->assertSame([], $this->valuestore->all());
     }
 
-    /** @test */
-    public function it_can_get_and_forget_a_value()
+    #[Test]
+    public function it_can_get_and_forget_a_value(): void
     {
         $this->valuestore->put('key', 'value');
 
@@ -309,8 +308,8 @@ class ValuestoreTest extends TestCase
         $this->assertNull($this->valuestore->get('key'));
     }
 
-    /** @test */
-    public function it_can_increment_a_new_value()
+    #[Test]
+    public function it_can_increment_a_new_value(): void
     {
         $returnValue = $this->valuestore->increment('number');
 
@@ -319,8 +318,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame(1, $this->valuestore->get('number'));
     }
 
-    /** @test */
-    public function it_can_increment_an_existing_value()
+    #[Test]
+    public function it_can_increment_an_existing_value(): void
     {
         $this->valuestore->put('number', 1);
 
@@ -331,8 +330,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame(2, $this->valuestore->get('number'));
     }
 
-    /** @test */
-    public function it_can_increment_a_value_by_another_value()
+    #[Test]
+    public function it_can_increment_a_value_by_another_value(): void
     {
         $returnValue = $this->valuestore->increment('number', 2);
 
@@ -347,8 +346,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame(4, $this->valuestore->get('number'));
     }
 
-    /** @test */
-    public function it_can_decrement_a_new_value()
+    #[Test]
+    public function it_can_decrement_a_new_value(): void
     {
         $returnValue = $this->valuestore->decrement('number');
 
@@ -357,8 +356,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame(-1, $this->valuestore->get('number'));
     }
 
-    /** @test */
-    public function it_can_decrement_an_existing_value()
+    #[Test]
+    public function it_can_decrement_an_existing_value(): void
     {
         $this->valuestore->put('number', 10);
 
@@ -369,8 +368,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame(9, $this->valuestore->get('number'));
     }
 
-    /** @test */
-    public function it_can_decrement_a_value_by_another_value()
+    #[Test]
+    public function it_can_decrement_a_value_by_another_value(): void
     {
         $returnValue = $this->valuestore->decrement('number', 2);
 
@@ -385,8 +384,8 @@ class ValuestoreTest extends TestCase
         $this->assertSame(-4, $this->valuestore->get('number'));
     }
 
-    /** @test */
-    public function it_implements_array_access()
+    #[Test]
+    public function it_implements_array_access(): void
     {
         $this->assertEmpty($this->valuestore['key']);
 
@@ -409,8 +408,8 @@ class ValuestoreTest extends TestCase
         $this->assertTrue(isset($this->valuestore['key']));
     }
 
-    /** @test */
-    public function it_implements_countable()
+    #[Test]
+    public function it_implements_countable(): void
     {
         $this->assertCount(0, $this->valuestore);
 
@@ -419,10 +418,10 @@ class ValuestoreTest extends TestCase
         $this->assertCount(1, $this->valuestore);
     }
 
-    /** @test */
-    public function it_will_delete_the_underlying_file_when_no_values_are_left_in_the_store()
+    #[Test]
+    public function it_will_delete_the_underlying_file_when_no_values_are_left_in_the_store(): void
     {
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
 
         $this->valuestore->put('key', 'value');
 
@@ -430,19 +429,19 @@ class ValuestoreTest extends TestCase
 
         $this->valuestore->forget('key');
 
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
 
         $this->valuestore->put('key', 'value');
 
         $this->valuestore->flush();
 
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
     }
 
-    /** @test */
-    public function the_all_function_will_always_return_an_array()
+    #[Test]
+    public function the_all_function_will_always_return_an_array(): void
     {
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
 
         touch($this->storageFile);
 
@@ -452,6 +451,6 @@ class ValuestoreTest extends TestCase
 
         $this->valuestore->flush();
 
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
     }
 }

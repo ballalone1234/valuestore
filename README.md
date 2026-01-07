@@ -7,6 +7,8 @@
 [![StyleCI](https://styleci.io/repos/53952776/shield?branch=master)](https://styleci.io/repos/53952776)
 [![Total Downloads](https://img.shields.io/packagist/dt/spatie/valuestore.svg?style=flat-square)](https://packagist.org/packages/spatie/valuestore)
 
+> **✨ Now with full PHP 8.2+ support!** This version includes typed properties, union types, and modern PHP features for better performance and type safety.
+
 This package makes it easy to store and retrieve some loose values. Stored values are saved as a json file.
 
 It can be used like this:
@@ -70,6 +72,13 @@ We invest a lot of resources into creating [best in class open source packages](
 
 We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
 
+## Requirements
+
+- PHP 8.2 or higher
+- JSON extension
+
+> **Note**: For PHP 7.2-8.1 support, please use version 1.x of this package.
+
 ## Installation
 
 You can install the package via composer:
@@ -77,6 +86,18 @@ You can install the package via composer:
 ``` bash
 composer require spatie/valuestore
 ```
+
+### Check System Compatibility
+
+Before installing, you can check if your system meets the requirements:
+
+```bash
+php check-php-version.php
+```
+
+### Upgrading from 1.x
+
+If you're upgrading from version 1.x, please read the [PHP 8 Upgrade Guide](PHP8_UPGRADE_GUIDE.md) and [Migration Summary](MIGRATION_SUMMARY.md).
 
 ## Usage
 
@@ -102,13 +123,8 @@ You can call the following methods on the `Valuestore`
 ```php
 /**
  * Put a value in the store.
- *
- * @param string|array $name
- * @param string|int|null $value
- * 
- * @return $this
  */
-public function put($name, $value = null)
+public function put(string|array $name, mixed $value = null): static
 ```
 
 ### get
@@ -116,152 +132,121 @@ public function put($name, $value = null)
 ```php
 /**
  * Get a value from the store.
- *
- * @param string $name
- *
- * @return null|string
  */
-public function get(string $name)
+public function get(string $name, mixed $default = null): mixed
 ```
 
 ### has
 
 ```php
-/*
+/**
  * Determine if the store has a value for the given name.
  */
-public function has(string $name) : bool
+public function has(string $name): bool
 ```
 
 ### all
 ```php
 /**
  * Get all values from the store.
- *
- * @return array
  */
-public function all() : array
+public function all(): array
 ```
 
 ### allStartingWith
 ```php
 /**
  * Get all values from the store which keys start with the given string.
- *
- * @param string $startingWith
- *
- * @return array
-*/
-public function allStartingWith(string $startingWith = '') : array
+ */
+public function allStartingWith(string $startingWith = ''): array
 ```
 
 ### forget
 ```php
 /**
  * Forget a value from the store.
- *
- * @param string $key
- *
- * @return $this
  */
-public function forget(string $key)
+public function forget(string $key): static
 ```
 
 ### flush
 ```php
 /**
  * Flush all values from the store.
- *
- * @return $this
  */
- public function flush()
+public function flush(): static
 ```
 
 ### flushStartingWith
 ```php
 /**
  * Flush all values from the store which keys start with the specified value.
- *
- * @param string $startingWith
- *
- * @return $this
  */
- public function flushStartingWith(string $startingWith)
+public function flushStartingWith(string $startingWith = ''): static
 ```
 
 ### pull
 ```php
 /**
  * Get and forget a value from the store.
- *
- * @param string $name 
- *
- * @return null|string
  */
-public function pull(string $name)
+public function pull(string $name): mixed
 ```
 
 ### increment
 ```php
 /**
  * Increment a value from the store.
- *
- * @param string $name
- * @param int $by
- *
- * @return int|null|string
  */
- public function increment(string $name, int $by = 1)
+public function increment(string $name, int $by = 1): int
 ```
 
 ### decrement
 ```php
 /**
  * Decrement a value from the store.
- *
- * @param string $name
- * @param int $by
- *
- * @return int|null|string
  */
- public function decrement(string $name, int $by = 1)
+public function decrement(string $name, int $by = 1): int
 ```
 
-## push
+### push
 ```php
 /**
  * Push a new value into an array.
- *
- * @param string $name
- * @param $pushValue
- *
- * @return $this
  */
-public function push(string $name, $pushValue)
+public function push(string $name, mixed $pushValue): static
 ```
 
-## prepend
+### prepend
 ```php
 /**
  * Prepend a new value into an array.
- *
- * @param string $name
- * @param $prependValue
- *
- * @return $this
  */
-public function prepend(string $name, $prependValue)
+public function prepend(string $name, mixed $prependValue): static
 ```
 
-## count
+### count
 ```php
 /**
  * Count elements.
- *
- * @return int
  */
-public function count()
+public function count(): int
 ```
+
+## What's New in 2.0
+
+This version includes major improvements with PHP 8.2+ features:
+
+- ✅ **Typed Properties**: All class properties now have type declarations
+- ✅ **Union Types**: Methods like `put()` support `string|array` parameters
+- ✅ **Return Types**: All methods have explicit return type declarations
+- ✅ **Static Return Type**: Fluent methods return `static` for better IDE support
+- ✅ **Mixed Type**: Flexible parameters use the `mixed` type
+- ✅ **Modern PHP Functions**: Uses `str_starts_with()` and other PHP 8 functions
+- ✅ **PHPUnit 11**: Tests updated to use PHP 8 attributes (`#[Test]`)
+- ✅ **Better Performance**: Optimized for PHP 8.2+ JIT compiler
+
+See [CHANGELOG.md](CHANGELOG.md) for a complete list of changes.
 
 ## Changelog
 
