@@ -7,16 +7,15 @@ use ArrayAccess;
 
 class Valuestore implements ArrayAccess, Countable
 {
-    /** @var string */
-    protected $fileName;
+    protected string $fileName; // PHP 8.1: Typed property for better type safety
 
     /**
      * @param string $fileName
      * @param array|null $values
      *
-     * @return $this
+     * @return static
      */
-    public static function make(string $fileName, array $values = null)
+    public static function make(string $fileName, ?array $values = null): static // PHP 8.1: static return type and nullable array type hint
     {
         $valuestore = (new static())->setFileName($fileName);
 
@@ -36,9 +35,9 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @param string $fileName
      *
-     * @return $this
+     * @return static
      */
-    protected function setFileName(string $fileName)
+    protected function setFileName(string $fileName): static // PHP 8.1: static return type for fluent interface
     {
         $this->fileName = $fileName;
 
@@ -49,11 +48,11 @@ class Valuestore implements ArrayAccess, Countable
      * Put a value in the store.
      *
      * @param string|array    $name
-     * @param string|int|null $value
+     * @param mixed $value
      *
-     * @return $this
+     * @return static
      */
-    public function put($name, $value = null)
+    public function put(string|array $name, mixed $value = null): static // PHP 8.1: Union type for $name, mixed for $value, and static return type
     {
         if ($name == []) {
             return $this;
@@ -76,11 +75,11 @@ class Valuestore implements ArrayAccess, Countable
      * Push a new value into an array.
      *
      * @param string $name
-     * @param $pushValue
+     * @param mixed $pushValue
      *
-     * @return $this
+     * @return static
      */
-    public function push(string $name, $pushValue)
+    public function push(string $name, mixed $pushValue): static // PHP 8.1: mixed type for $pushValue and static return type
     {
         if (! is_array($pushValue)) {
             $pushValue = [$pushValue];
@@ -109,11 +108,11 @@ class Valuestore implements ArrayAccess, Countable
      * Prepend a new value in an array.
      *
      * @param string $name
-     * @param $prependValue
+     * @param mixed $prependValue
      *
-     * @return $this
+     * @return static
      */
-    public function prepend(string $name, $prependValue)
+    public function prepend(string $name, mixed $prependValue): static // PHP 8.1: mixed type for $prependValue and static return type
     {
         if (! is_array($prependValue)) {
             $prependValue = [$prependValue];
@@ -142,11 +141,11 @@ class Valuestore implements ArrayAccess, Countable
      * Get a value from the store.
      *
      * @param string $name
-     * @param $default
+     * @param mixed $default
      *
-     * @return null|string|array
+     * @return mixed
      */
-    public function get(string $name, $default = null)
+    public function get(string $name, mixed $default = null): mixed // PHP 8.1: mixed type for $default and return type
     {
         $all = $this->all();
 
@@ -202,9 +201,9 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @param string $key
      *
-     * @return $this
+     * @return static
      */
-    public function forget(string $key)
+    public function forget(string $key): static // PHP 8.1: static return type for fluent interface
     {
         $newContent = $this->all();
 
@@ -218,9 +217,9 @@ class Valuestore implements ArrayAccess, Countable
     /**
      * Flush all values from the store.
      *
-     * @return $this
+     * @return static
      */
-    public function flush()
+    public function flush(): static // PHP 8.1: static return type for fluent interface
     {
         return $this->setContent([]);
     }
@@ -230,9 +229,9 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @param string $startingWith
      *
-     * @return $this
+     * @return static
      */
-    public function flushStartingWith(string $startingWith = '')
+    public function flushStartingWith(string $startingWith = ''): static // PHP 8.1: static return type for fluent interface
     {
         $newContent = [];
 
@@ -248,9 +247,9 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @param string $name
      *
-     * @return null|string
+     * @return mixed
      */
-    public function pull(string $name)
+    public function pull(string $name): mixed // PHP 8.1: mixed return type
     {
         $value = $this->get($name);
 
@@ -265,13 +264,14 @@ class Valuestore implements ArrayAccess, Countable
      * @param string $name
      * @param int    $by
      *
-     * @return int|null|string
+     * @return int
      */
-    public function increment(string $name, int $by = 1)
+    public function increment(string $name, int $by = 1): int // PHP 8.1: strict int return type
     {
         $currentValue = $this->get($name) ?? 0;
 
-        $newValue = $currentValue + $by;
+        /** @var int $newValue */
+        $newValue = $currentValue + $by; // PHP 8.1: numeric operation result
 
         $this->put($name, $newValue);
 
@@ -284,9 +284,9 @@ class Valuestore implements ArrayAccess, Countable
      * @param string $name
      * @param int    $by
      *
-     * @return int|null|string
+     * @return int
      */
-    public function decrement(string $name, int $by = 1)
+    public function decrement(string $name, int $by = 1): int // PHP 8.1: strict int return type
     {
         return $this->increment($name, $by * -1);
     }
@@ -300,7 +300,7 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool // PHP 8.1: ArrayAccess interface compatibility
     {
         return $this->has($offset);
     }
@@ -314,7 +314,7 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed // PHP 8.1: ArrayAccess interface compatibility
     {
         return $this->get($offset);
     }
@@ -326,8 +326,10 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @param mixed $offset
      * @param mixed $value
+     *
+     * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void // PHP 8.1: ArrayAccess interface compatibility
     {
         $this->put($offset, $value);
     }
@@ -338,8 +340,10 @@ class Valuestore implements ArrayAccess, Countable
      * @link http://php.net/manual/en/arrayaccess.offsetunset.php
      *
      * @param mixed $offset
+     *
+     * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void // PHP 8.1: ArrayAccess interface compatibility
     {
         $this->forget($offset);
     }
@@ -351,7 +355,7 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return int
      */
-    public function count()
+    public function count(): int // PHP 8.1: Countable interface compatibility
     {
         return count($this->all());
     }
@@ -372,15 +376,15 @@ class Valuestore implements ArrayAccess, Countable
 
     protected function startsWith(string $haystack, string $needle) : bool
     {
-        return substr($haystack, 0, strlen($needle)) === $needle;
+        return str_starts_with($haystack, $needle); // PHP 8.1: Using native str_starts_with function
     }
 
     /**
      * @param array $values
      *
-     * @return $this
+     * @return static
      */
-    protected function setContent(array $values)
+    protected function setContent(array $values): static // PHP 8.1: static return type for fluent interface
     {
         file_put_contents($this->fileName, json_encode($values));
 
