@@ -13,7 +13,7 @@ class ValuestoreTest extends TestCase
     /** @var \Spatie\Valuestore\Valuestore */
     protected $valuestore;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -121,6 +121,14 @@ class ValuestoreTest extends TestCase
         $this->valuestore->put('number', 1);
 
         $this->assertSame(1, $this->valuestore->get('number'));
+    }
+
+    /** @test */
+    public function it_can_store_a_float()
+    {
+        $this->valuestore->put('PI', 3.14159265359);
+
+        $this->assertSame(3.14159265359, $this->valuestore->get('PI'));
     }
 
     /** @test */
@@ -348,6 +356,26 @@ class ValuestoreTest extends TestCase
     }
 
     /** @test */
+    public function it_cannot_increment_a_string_value()
+    {
+        $this->valuestore->put('string', 'test');
+
+        $this->valuestore->increment('string');
+
+        $this->assertSame('test', $this->valuestore->get('string'));
+    }
+
+    /** @test */
+    public function it_cannot_increment_a_null_value()
+    {
+        $this->valuestore->put('null', null);
+
+        $this->valuestore->increment('string');
+
+        $this->assertSame(null, $this->valuestore->get('null'));
+    }
+
+    /** @test */
     public function it_can_decrement_a_new_value()
     {
         $returnValue = $this->valuestore->decrement('number');
@@ -383,6 +411,26 @@ class ValuestoreTest extends TestCase
         $this->assertSame(-4, $returnValue);
 
         $this->assertSame(-4, $this->valuestore->get('number'));
+    }
+
+    /** @test */
+    public function it_cannot_decrement_a_string_value()
+    {
+        $this->valuestore->put('string', 'test');
+
+        $this->valuestore->increment('string');
+
+        $this->assertSame('test', $this->valuestore->get('string'));
+    }
+
+    /** @test */
+    public function it_cannot_decrement_a_null_value()
+    {
+        $this->valuestore->put('null', null);
+
+        $this->valuestore->increment('string');
+
+        $this->assertSame(null, $this->valuestore->get('null'));
     }
 
     /** @test */
@@ -422,7 +470,7 @@ class ValuestoreTest extends TestCase
     /** @test */
     public function it_will_delete_the_underlying_file_when_no_values_are_left_in_the_store()
     {
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
 
         $this->valuestore->put('key', 'value');
 
@@ -430,19 +478,19 @@ class ValuestoreTest extends TestCase
 
         $this->valuestore->forget('key');
 
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
 
         $this->valuestore->put('key', 'value');
 
         $this->valuestore->flush();
 
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
     }
 
     /** @test */
     public function the_all_function_will_always_return_an_array()
     {
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
 
         touch($this->storageFile);
 
@@ -452,6 +500,6 @@ class ValuestoreTest extends TestCase
 
         $this->valuestore->flush();
 
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
     }
 }
