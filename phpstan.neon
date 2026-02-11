@@ -1,0 +1,8 @@
+parameters:
+    level: max
+    paths:
+        - src
+    ignoreErrors:
+        # Allow new static() in factory method - this is intentional design pattern
+        - '#Unsafe usage of new static\(\)#'
+
