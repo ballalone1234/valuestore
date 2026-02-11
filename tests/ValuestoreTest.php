@@ -422,7 +422,7 @@ class ValuestoreTest extends TestCase
     /** @test */
     public function it_will_delete_the_underlying_file_when_no_values_are_left_in_the_store()
     {
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
 
         $this->valuestore->put('key', 'value');
 
@@ -430,19 +430,19 @@ class ValuestoreTest extends TestCase
 
         $this->valuestore->forget('key');
 
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
 
         $this->valuestore->put('key', 'value');
 
         $this->valuestore->flush();
 
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
     }
 
     /** @test */
     public function the_all_function_will_always_return_an_array()
     {
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
 
         touch($this->storageFile);
 
@@ -452,6 +452,6 @@ class ValuestoreTest extends TestCase
 
         $this->valuestore->flush();
 
-        $this->assertFileNotExists($this->storageFile);
+        $this->assertFileDoesNotExist($this->storageFile);
     }
 }

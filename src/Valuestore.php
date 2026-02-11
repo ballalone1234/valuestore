@@ -7,18 +7,14 @@ use ArrayAccess;
 
 class Valuestore implements ArrayAccess, Countable
 {
-    /** @var string */
-    protected $fileName;
+    protected string $fileName;
 
     /**
-     * @param string $fileName
-     * @param array|null $values
-     *
-     * @return $this
+     * สร้าง Valuestore พร้อมกำหนดไฟล์เก็บข้อมูล (และค่าเริ่มต้นถ้ามี)
      */
-    public static function make(string $fileName, array $values = null)
+    public static function make(string $fileName, ?array $values = null): static
     {
-        $valuestore = (new static())->setFileName($fileName);
+        $valuestore = new static($fileName);
 
         if (! is_null($values)) {
             $valuestore->put($values);
@@ -27,43 +23,25 @@ class Valuestore implements ArrayAccess, Countable
         return $valuestore;
     }
 
-    protected function __construct()
-    {
-    }
-
-    /**
-     * Set the filename where all values will be stored.
-     *
-     * @param string $fileName
-     *
-     * @return $this
-     */
-    protected function setFileName(string $fileName)
+    protected function __construct(string $fileName)
     {
         $this->fileName = $fileName;
-
-        return $this;
     }
 
     /**
      * Put a value in the store.
      *
-     * @param string|array    $name
-     * @param string|int|null $value
-     *
-     * @return $this
+     * Legacy compatibility: ต้องรองรับทั้ง put('key', 'value') และ put(['k'=>'v'])
      */
-    public function put($name, $value = null)
+    public function put(string|int|null|array $name, mixed $value = null): static
     {
-        if ($name == []) {
+        // PHP 8+ เปลี่ยนพฤติกรรม loose compare ระหว่าง array กับ scalar
+        // เราตั้งใจข้ามเฉพาะกรณี "ส่ง array ว่าง" เท่านั้น (ตามเทสต์)
+        if (is_array($name) && $name === []) {
             return $this;
         }
 
-        $newValues = $name;
-
-        if (! is_array($name)) {
-            $newValues = [$name => $value];
-        }
+        $newValues = self::normalizePutArguments($name, $value);
 
         $newContent = array_merge($this->all(), $newValues);
 
@@ -80,11 +58,9 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return $this
      */
-    public function push(string $name, $pushValue)
+    public function push(string $name, mixed $pushValue): static
     {
-        if (! is_array($pushValue)) {
-            $pushValue = [$pushValue];
-        }
+        $pushValue = self::normalizeToArray($pushValue);
 
         if (! $this->has($name)) {
             $this->put($name, $pushValue);
@@ -94,9 +70,7 @@ class Valuestore implements ArrayAccess, Countable
 
         $oldValue = $this->get($name);
 
-        if (! is_array($oldValue)) {
-            $oldValue = [$oldValue];
-        }
+        $oldValue = self::normalizeToArray($oldValue);
 
         $newValue = array_merge($oldValue, $pushValue);
 
@@ -113,11 +87,9 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return $this
      */
-    public function prepend(string $name, $prependValue)
+    public function prepend(string $name, mixed $prependValue): static
     {
-        if (! is_array($prependValue)) {
-            $prependValue = [$prependValue];
-        }
+        $prependValue = self::normalizeToArray($prependValue);
 
         if (! $this->has($name)) {
             $this->put($name, $prependValue);
@@ -127,9 +99,7 @@ class Valuestore implements ArrayAccess, Countable
 
         $oldValue = $this->get($name);
 
-        if (! is_array($oldValue)) {
-            $oldValue = [$oldValue];
-        }
+        $oldValue = self::normalizeToArray($oldValue);
 
         $newValue = array_merge($prependValue, $oldValue);
 
@@ -144,9 +114,9 @@ class Valuestore implements ArrayAccess, Countable
      * @param string $name
      * @param $default
      *
-     * @return null|string|array
+     * @return mixed
      */
-    public function get(string $name, $default = null)
+    public function get(string $name, mixed $default = null): mixed
     {
         $all = $this->all();
 
@@ -160,7 +130,7 @@ class Valuestore implements ArrayAccess, Countable
     /*
      * Determine if the store has a value for the given name.
      */
-    public function has(string $name) : bool
+    public function has(string $name): bool
     {
         return array_key_exists($name, $this->all());
     }
@@ -170,13 +140,19 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return array
      */
-    public function all() : array
+    public function all(): array
     {
         if (! file_exists($this->fileName)) {
             return [];
         }
 
-        return json_decode(file_get_contents($this->fileName), true) ?? [];
+        $contents = file_get_contents($this->fileName);
+
+        if ($contents === false || $contents === '') {
+            return [];
+        }
+
+        return json_decode($contents, true) ?? [];
     }
 
     /**
@@ -186,7 +162,7 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return array
      */
-    public function allStartingWith(string $startingWith = '') : array
+    public function allStartingWith(string $startingWith = ''): array
     {
         $values = $this->all();
 
@@ -204,7 +180,7 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return $this
      */
-    public function forget(string $key)
+    public function forget(string $key): static
     {
         $newContent = $this->all();
 
@@ -220,7 +196,7 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return $this
      */
-    public function flush()
+    public function flush(): static
     {
         return $this->setContent([]);
     }
@@ -232,7 +208,7 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return $this
      */
-    public function flushStartingWith(string $startingWith = '')
+    public function flushStartingWith(string $startingWith = ''): static
     {
         $newContent = [];
 
@@ -248,9 +224,9 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @param string $name
      *
-     * @return null|string
+     * @return mixed
      */
-    public function pull(string $name)
+    public function pull(string $name): mixed
     {
         $value = $this->get($name);
 
@@ -265,13 +241,15 @@ class Valuestore implements ArrayAccess, Countable
      * @param string $name
      * @param int    $by
      *
-     * @return int|null|string
+     * @return int|float
      */
-    public function increment(string $name, int $by = 1)
+    public function increment(string $name, int $by = 1): int|float
     {
-        $currentValue = $this->get($name) ?? 0;
-
-        $newValue = $currentValue + $by;
+        // Legacy compatibility: PHP 7 อนุโลมกว่าในการ + กับ string/ค่าแปลก ๆ
+        // PHP 8+ อาจ TypeError ได้ เราจึง coerce ให้เป็นเลขก่อน
+        $currentValue = $this->get($name);
+        $numericCurrent = self::coerceToNumeric($currentValue);
+        $newValue = $numericCurrent + $by;
 
         $this->put($name, $newValue);
 
@@ -284,9 +262,9 @@ class Valuestore implements ArrayAccess, Countable
      * @param string $name
      * @param int    $by
      *
-     * @return int|null|string
+     * @return int|float
      */
-    public function decrement(string $name, int $by = 1)
+    public function decrement(string $name, int $by = 1): int|float
     {
         return $this->increment($name, $by * -1);
     }
@@ -300,9 +278,13 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool
     {
-        return $this->has($offset);
+        if ($offset === null) {
+            return false;
+        }
+
+        return $this->has((string) $offset);
     }
 
     /**
@@ -314,9 +296,13 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
-        return $this->get($offset);
+        if ($offset === null) {
+            return null;
+        }
+
+        return $this->get((string) $offset);
     }
 
     /**
@@ -327,7 +313,7 @@ class Valuestore implements ArrayAccess, Countable
      * @param mixed $offset
      * @param mixed $value
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->put($offset, $value);
     }
@@ -339,9 +325,13 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @param mixed $offset
      */
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
-        $this->forget($offset);
+        if ($offset === null) {
+            return;
+        }
+
+        $this->forget((string) $offset);
     }
 
     /**
@@ -351,28 +341,27 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->all());
     }
 
-    protected function filterKeysStartingWith(array $values, string $startsWith) : array
+    protected function filterKeysStartingWith(array $values, string $startsWith): array
     {
-        return array_filter($values, function ($key) use ($startsWith) {
-            return $this->startsWith($key, $startsWith);
-        }, ARRAY_FILTER_USE_KEY);
+        return array_filter(
+            $values,
+            fn ($key) => str_starts_with((string) $key, $startsWith),
+            ARRAY_FILTER_USE_KEY
+        );
     }
 
-    protected function filterKeysNotStartingWith(array $values, string $startsWith) : array
+    protected function filterKeysNotStartingWith(array $values, string $startsWith): array
     {
-        return array_filter($values, function ($key) use ($startsWith) {
-            return ! $this->startsWith($key, $startsWith);
-        }, ARRAY_FILTER_USE_KEY);
-    }
-
-    protected function startsWith(string $haystack, string $needle) : bool
-    {
-        return substr($haystack, 0, strlen($needle)) === $needle;
+        return array_filter(
+            $values,
+            fn ($key) => ! str_starts_with((string) $key, $startsWith),
+            ARRAY_FILTER_USE_KEY
+        );
     }
 
     /**
@@ -380,14 +369,57 @@ class Valuestore implements ArrayAccess, Countable
      *
      * @return $this
      */
-    protected function setContent(array $values)
+    protected function setContent(array $values): static
     {
         file_put_contents($this->fileName, json_encode($values));
 
         if (! count($values)) {
-            unlink($this->fileName);
+            if (file_exists($this->fileName)) {
+                unlink($this->fileName);
+            }
         }
 
         return $this;
+    }
+
+    // ---------------------------------------------------------------------
+    // Legacy PHP 7 behavior clustering (normalize/coerce) vs Modern PHP 8.5 types
+    // ---------------------------------------------------------------------
+
+    private static function normalizePutArguments(string|int|null|array $name, mixed $value): array
+    {
+        if (is_array($name)) {
+            return $name;
+        }
+
+        return [$name => $value];
+    }
+
+    private static function normalizeToArray(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        return [$value];
+    }
+
+    private static function coerceToNumeric(mixed $value): int|float
+    {
+        if (is_int($value) || is_float($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && is_numeric($value)) {
+            // ถ้าเป็นเลขทศนิยม/วิทยาศาสตร์ให้เก็บเป็น float เพื่อไม่ทำให้ข้อมูลเพี้ยน
+            $lower = strtolower($value);
+            if (str_contains($value, '.') || str_contains($lower, 'e')) {
+                return (float) $value;
+            }
+
+            return (int) $value;
+        }
+
+        return 0;
     }
 }
